@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/lingmoplatformtheme.dir/link.d"
+  "CMakeFiles/lingmoplatformtheme_autogen.dir/AutogenUsed.txt"
+  "CMakeFiles/lingmoplatformtheme_autogen.dir/ParseCache.txt"
+  "lingmoplatformtheme_autogen"
+  "CMakeFiles/lingmoplatformtheme.dir/hintsettings.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/hintsettings.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/lingmoplatformtheme_autogen/mocs_compilation.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/lingmoplatformtheme_autogen/mocs_compilation.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/main.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/main.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/platformtheme.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/platformtheme.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/qdbusmenubar.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/qdbusmenubar.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/statusnotifier/dbustypes.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/statusnotifier/dbustypes.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/statusnotifier/statusnotifieritem.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/statusnotifier/statusnotifieritem.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/statusnotifieritemadaptor.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/statusnotifieritemadaptor.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/statusnotifierwatcher_interface.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/statusnotifierwatcher_interface.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/systemtrayicon.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/systemtrayicon.cpp.o.d"
+  "CMakeFiles/lingmoplatformtheme.dir/x11integration.cpp.o"
+  "CMakeFiles/lingmoplatformtheme.dir/x11integration.cpp.o.d"
+  "liblingmoplatformtheme.pdb"
+  "liblingmoplatformtheme.so"
+  "lingmoplatformtheme_autogen/mocs_compilation.cpp"
+  "lingmoplatformtheme_autogen/timestamp"
+  "moc_statusnotifieritemadaptor.cpp"
+  "moc_statusnotifierwatcher_interface.cpp"
+  "statusnotifieritemadaptor.cpp"
+  "statusnotifieritemadaptor.h"
+  "statusnotifierwatcher_interface.cpp"
+  "statusnotifierwatcher_interface.h"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/lingmoplatformtheme.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

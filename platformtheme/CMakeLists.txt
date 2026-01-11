@@ -5,19 +5,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5QuickControls2 REQUIRED)
-find_package(Qt5DBus REQUIRED)
-find_package(Qt5X11Extras REQUIRED)
-find_package(Qt5Gui CONFIG REQUIRED Private)
-find_package(Qt5XdgIconLoader REQUIRED)
-find_package(dbusmenu-qt5 REQUIRED)
-find_package(KF5WindowSystem REQUIRED)
-
-# dependencies for QPA plugin
-find_package(Qt5ThemeSupport REQUIRED)
-set(QT5PLATFORMSUPPORT_LIBS Qt5ThemeSupport::Qt5ThemeSupport)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets QuickControls2 DBus Gui)
+find_package(Qt6GuiPrivate REQUIRED)
+find_package(KF6WindowSystem REQUIRED)
+find_package(PkgConfig REQUIRED)
 
 # qdbusmenubar uses them
 remove_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
@@ -42,9 +33,9 @@ set (SRCS
     statusnotifier/statusnotifieritem.cpp
 )
 
-qt5_add_dbus_interface(SRCS org.kde.StatusNotifierWatcher.xml statusnotifierwatcher_interface)
+qt6_add_dbus_interface(SRCS org.kde.StatusNotifierWatcher.xml statusnotifierwatcher_interface)
 
-qt5_add_dbus_adaptor(SRCS
+qt6_add_dbus_adaptor(SRCS
     statusnotifier/org.kde.StatusNotifierItem.xml
     statusnotifier/statusnotifieritem.h
     StatusNotifierItem
@@ -58,36 +49,31 @@ target_compile_definitions(lingmoplatformtheme
         "LIB_FM_QT_SONAME=\"${LIB_FM_QT_SONAME}\""
 )
 
+target_include_directories(lingmoplatformtheme PRIVATE ${XCB_EWMH_INCLUDE_DIRS})
+
 target_link_libraries(lingmoplatformtheme PRIVATE
-    Qt5::GuiPrivate
-    Qt5::X11Extras
-    Qt5::Widgets
-    Qt5::QuickControls2
-    Qt5::Core
-    Qt5::DBus
-    dbusmenu-qt5
-
-    Qt5XdgIconLoader
-
-    KF5::WindowSystem
-    ${XCB_LIBRARIES}
-    ${QT5PLATFORMSUPPORT_LIBS}
+    Qt6::GuiPrivate
+    Qt6::Widgets
+    Qt6::QuickControls2
+    Qt6::Core
+    Qt6::DBus
+    KF6::WindowSystem
+    ${XCB_EWMH_LIBRARIES}
 )
 
-get_target_property(QT_QMAKE_EXECUTABLE ${Qt5Core_QMAKE_EXECUTABLE} IMPORTED_LOCATION)
-if(NOT QT_QMAKE_EXECUTABLE)
-    message(FATAL_ERROR "qmake is not found.")
+find_program(QTPATHS_EXECUTABLE qtpaths)
+if(NOT QTPATHS_EXECUTABLE)
+    message(FATAL_ERROR "qtpaths is not found.")
 endif()
 
-# execute the command "qmake -query QT_INSTALL_PLUGINS" to get the path of plugins dir.
-execute_process(COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_PLUGINS
+execute_process(COMMAND ${QTPATHS_EXECUTABLE} --plugin-dir
     OUTPUT_VARIABLE QT_PLUGINS_DIR
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 if(QT_PLUGINS_DIR)
-    message(STATUS "Qt5 plugin directory:" "${QT_PLUGINS_DIR}")
+    message(STATUS "Qt6 plugin directory:" "${QT_PLUGINS_DIR}")
 else()
-    message(FATAL_ERROR "Qt5 plugin directory cannot be detected.")
+    message(FATAL_ERROR "Qt6 plugin directory cannot be detected.")
 endif()
 
 install(TARGETS lingmoplatformtheme LIBRARY DESTINATION "${QT_PLUGINS_DIR}/platformthemes")

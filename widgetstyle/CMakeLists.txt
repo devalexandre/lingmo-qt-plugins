@@ -9,10 +9,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-set(QT Core Gui Widgets DBus X11Extras)
-find_package(Qt5 REQUIRED ${QT})
+set(QT Core Gui Widgets DBus)
+find_package(Qt6 REQUIRED ${QT})
 find_package(PkgConfig REQUIRED)
-find_package(KF5 REQUIRED WindowSystem)
+find_package(KF6 REQUIRED WindowSystem)
+
+pkg_check_modules(XCB REQUIRED xcb xcb-shape xcb-icccm)
 
 include(ECMQueryQt)
 
@@ -34,14 +36,14 @@ set (SRCS
 )
 
 add_library(${TARGET} MODULE ${SRCS})
+target_include_directories(${TARGET} PRIVATE ${XCB_INCLUDE_DIRS})
 target_link_libraries(${TARGET}
-    Qt5::GuiPrivate
-    Qt5::Core
-    Qt5::Gui
-    Qt5::Widgets
-    Qt5::DBus
-    Qt5::X11Extras
-    KF5::WindowSystem
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::DBus
+    KF6::WindowSystem
+    ${XCB_LIBRARIES}
     )
 
 ecm_query_qt(CMAKE_INSTALL_QTPLUGINDIR QT_INSTALL_PLUGINS)

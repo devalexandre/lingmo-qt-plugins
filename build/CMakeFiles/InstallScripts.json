@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/build/cmake_install.cmake",
+		"/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/build/platformtheme/cmake_install.cmake",
+		"/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/build/widgetstyle/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

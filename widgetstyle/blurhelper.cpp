@@ -42,7 +42,6 @@
 #include <QEvent>
 #include <QPainterPath>
 #include <QApplication>
-#include <QX11Info>
 
 // XCB
 #include <xcb/xcb.h>
@@ -103,9 +102,15 @@ void BlurHelper::update(QWidget *widget) const
         return;
 
     if (widget->mask().isEmpty()) {
-        KWindowEffects::enableBlurBehind(widget->winId(), true);
+        if (!widget->windowHandle()) {
+            widget->createWinId();
+        }
+        KWindowEffects::enableBlurBehind(widget->windowHandle(), true);
     } else {
-        KWindowEffects::enableBlurBehind(widget->winId(), true, widget->mask());
+        if (!widget->windowHandle()) {
+            widget->createWinId();
+        }
+        KWindowEffects::enableBlurBehind(widget->windowHandle(), true, widget->mask());
     }
 
     // force update
@@ -119,7 +124,13 @@ void BlurHelper::enableBlurBehind(QWidget *widget, bool enable, qreal windowRadi
     if (!widget)
         return;
 
-    xcb_connection_t *c = QX11Info::connection();
+    static xcb_connection_t *c = nullptr;
+    if (!c) {
+        c = xcb_connect(nullptr, nullptr);
+    }
+    if (!c || xcb_connection_has_error(c)) {
+        return;
+    }
     if (!c)
         return;
 

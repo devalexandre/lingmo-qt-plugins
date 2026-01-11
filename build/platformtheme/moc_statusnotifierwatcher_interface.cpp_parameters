@@ -1,0 +1,5 @@
+-I/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/platformtheme
+-I/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/build/platformtheme
+-o
+/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/build/platformtheme/moc_statusnotifierwatcher_interface.cpp
+/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/build/platformtheme/statusnotifierwatcher_interface.h

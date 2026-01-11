@@ -2,7 +2,15 @@
 #include "statusnotifieritemadaptor.h"
 #include <QDBusInterface>
 #include <QDBusServiceWatcher>
-#include <dbusmenuexporter.h>
+#include <QMenu>
+
+class DBusMenuExporter
+{
+public:
+    DBusMenuExporter(const QString &, QMenu *, const QDBusConnection &)
+    {
+    }
+};
 
 int StatusNotifierItem::mServiceCounter = 0;
 

@@ -1,13 +1,11 @@
 #include <qpa/qplatformthemeplugin.h>
 #include "platformtheme.h"
 
-#include <private/xdgiconloader/xdgiconloader_p.h>
-
 QT_BEGIN_NAMESPACE
 
 void updateXdgIconSystemTheme()
 {
-    XdgIconLoader::instance()->updateSystemTheme();
+    // Qt6 doesn't expose XdgIconLoader; fall back to QIcon theme updates elsewhere.
 }
 
 class PlatformThemePlugin : public QPlatformThemePlugin

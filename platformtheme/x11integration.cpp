@@ -21,7 +21,6 @@
 #include "x11integration.h"
 
 #include <QCoreApplication>
-#include <QX11Info>
 #include <QPlatformSurfaceEvent>
 #include <QGuiApplication>
 #include <QWindow>
@@ -38,6 +37,32 @@
 static const char s_schemePropertyName[] = "KDE_COLOR_SCHEME_PATH";
 static const QByteArray s_blurBehindPropertyName = QByteArrayLiteral("ENABLE_BLUR_BEHIND_HINT");
 static const QByteArray s_blurRegionPropertyName = QByteArrayLiteral("BLUR_REGION");
+
+static xcb_connection_t *x11Connection()
+{
+    static xcb_connection_t *conn = nullptr;
+    if (!conn) {
+        conn = xcb_connect(nullptr, nullptr);
+    }
+    if (!conn || xcb_connection_has_error(conn)) {
+        return nullptr;
+    }
+    return conn;
+}
+
+static xcb_window_t x11RootWindow()
+{
+    xcb_connection_t *conn = x11Connection();
+    if (!conn) {
+        return XCB_WINDOW_NONE;
+    }
+    const xcb_setup_t *setup = xcb_get_setup(conn);
+    if (!setup) {
+        return XCB_WINDOW_NONE;
+    }
+    xcb_screen_iterator_t it = xcb_setup_roots_iterator(setup);
+    return it.rem ? it.data->root : XCB_WINDOW_NONE;
+}
 
 X11Integration::X11Integration()
     : QObject()
@@ -58,8 +83,10 @@ bool X11Integration::eventFilter(QObject *watched, QEvent *event)
     if (event->type() == QEvent::Show && watched->inherits("QShapedPixmapWindow")) {
         //static cast should be safe there
         QWindow *w = static_cast<QWindow *>(watched);
-        NETWinInfo info(QX11Info::connection(), w->winId(), QX11Info::appRootWindow(), NET::WMWindowType, NET::Properties2());
-        info.setWindowType(NET::DNDIcon);
+        if (auto *conn = x11Connection()) {
+            NETWinInfo info(conn, w->winId(), x11RootWindow(), NET::WMWindowType, NET::Properties2());
+            info.setWindowType(NET::DNDIcon);
+        }
         // TODO: does this flash the xcb connection?
     }
 
@@ -103,13 +130,18 @@ void X11Integration::installDesktopFileName(QWindow *w)
     if (desktopFileName.endsWith(QLatin1String(".desktop"))) {
         desktopFileName.chop(8);
     }
-    NETWinInfo info(QX11Info::connection(), w->winId(), QX11Info::appRootWindow(), NET::Properties(), NET::Properties2());
-    info.setDesktopFileName(desktopFileName.toUtf8().constData());
+    if (auto *conn = x11Connection()) {
+        NETWinInfo info(conn, w->winId(), x11RootWindow(), NET::Properties(), NET::Properties2());
+        info.setDesktopFileName(desktopFileName.toUtf8().constData());
+    }
 }
 
 void X11Integration::setWindowProperty(QWindow *window, const QByteArray &name, const QByteArray &value)
 {
-    auto *c = QX11Info::connection();
+    auto *c = x11Connection();
+    if (!c) {
+        return;
+    }
 
     xcb_atom_t atom;
     auto it = m_atoms.find(name);

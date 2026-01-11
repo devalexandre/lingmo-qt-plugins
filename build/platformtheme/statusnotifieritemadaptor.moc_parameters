@@ -1,0 +1,5 @@
+-I/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/platformtheme
+-I/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/build/platformtheme
+-o
+/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/build/platformtheme/statusnotifieritemadaptor.moc
+/home/devalexandre/projects/devalexandre/lingmo-arch-pkgbuilder-fork/lingmo-qt-plugins/lingmo-qt-plugins-fork/build/platformtheme/statusnotifieritemadaptor.h

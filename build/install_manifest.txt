@@ -1,0 +1,2 @@
+/usr/lib/qt/plugins/platformthemes/liblingmoplatformtheme.so
+/usr/lib/qt/plugins/styles/liblingmostyle.so

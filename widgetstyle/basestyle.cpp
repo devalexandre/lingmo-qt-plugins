@@ -972,7 +972,9 @@ namespace Phantom
         {
             QRect ra = bar->rect;
             QRect rb = ra;
-            bool isHorizontal = bar->orientation != Qt::Vertical;
+            bool isHorizontal = bar->state & QStyle::State_Horizontal;
+            if (!isHorizontal && bar->state == QStyle::State_None)
+                isHorizontal = true;
             bool isInverted = bar->invertedAppearance;
             bool isIndeterminate = bar->minimum == 0 && bar->maximum == 0;
             bool isForward = !isHorizontal || bar->direction != Qt::RightToLeft;
@@ -1126,7 +1128,7 @@ namespace Phantom
         int fontMetricsWidth(const QFontMetrics& fontMetrics, const QString& text)
         {
 #if QT_VERSION < QT_VERSION_CHECK(5, 11, 0)
-            return fontMetrics.width(text, text.size(), Qt::TextBypassShaping);
+            return fontMetrics.width(text, text.size());
 #else
             return fontMetrics.horizontalAdvance(text);
 #endif
@@ -2938,7 +2940,7 @@ void BaseStyle::drawControl(ControlElement element,
         QRect r = bar->rect.adjusted(2, 2, -2, -2);
         if (r.isEmpty() || !r.isValid())
             break;
-        QSize textSize = option->fontMetrics.size(Qt::TextBypassShaping, bar->text);
+        QSize textSize = option->fontMetrics.size(Qt::TextSingleLine, bar->text);
         QRect textRect = QStyle::alignedRect(option->direction, Qt::AlignCenter, textSize, option->rect);
         textRect &= r;
         if (textRect.isEmpty())
@@ -3111,11 +3113,12 @@ void BaseStyle::drawControl(ControlElement element,
         }
 
         // Draw main text and mnemonic text
-        QStringRef s(&menuItem->text);
-        if (!s.isEmpty()) {
+        const QString menuText = menuItem->text;
+        if (!menuText.isEmpty()) {
+            const int tabWidth = menuItem->reservedShortcutWidth;
             QRect textRect =
-                Ph::menuItemTextRect(metrics, option->direction, itemRect, hasSubMenu, hasIcon, menuItem->tabWidth);
-            int t = s.indexOf(QLatin1Char('\t'));
+                Ph::menuItemTextRect(metrics, option->direction, itemRect, hasSubMenu, hasIcon, tabWidth);
+            int t = menuText.indexOf(QLatin1Char('\t'));
             int text_flags =
                 Qt::AlignLeft | Qt::AlignTop | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
             if (!styleHint(SH_UnderlineShortcut, menuItem, widget))
@@ -3173,15 +3176,12 @@ void BaseStyle::drawControl(ControlElement element,
             // Draw mnemonic text
             if (t >= 0) {
                 QRect mnemonicR =
-                    Ph::menuItemMnemonicRect(metrics, option->direction, itemRect, hasSubMenu, menuItem->tabWidth);
-                const QStringRef textToDrawRef = s.mid(t + 1);
-                const QString unsafeTextToDraw = QString::fromRawData(textToDrawRef.constData(), textToDrawRef.size());
-                painter->drawText(mnemonicR, text_flags, unsafeTextToDraw);
-                s = s.left(t);
+                    Ph::menuItemMnemonicRect(metrics, option->direction, itemRect, hasSubMenu, tabWidth);
+                painter->drawText(mnemonicR, text_flags, menuText.mid(t + 1));
+                painter->drawText(textRect, text_flags, menuText.left(t));
+            } else {
+                painter->drawText(textRect, text_flags, menuText);
             }
-            const QStringRef textToDrawRef = s.left(t);
-            const QString unsafeTextToDraw = QString::fromRawData(textToDrawRef.constData(), textToDrawRef.size());
-            painter->drawText(textRect, text_flags, unsafeTextToDraw);
         }
 
         // SubMenu Arrow
@@ -3486,6 +3486,9 @@ void BaseStyle::drawControl(ControlElement element,
         QRect nonFilled;
         bool isIndeterminate;
         Ph::progressBarFillRects(progressBar, filled, nonFilled, isIndeterminate);
+        bool isHorizontal = progressBar->state & QStyle::State_Horizontal;
+        if (!isHorizontal && progressBar->state == QStyle::State_None)
+            isHorizontal = true;
 
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
@@ -3500,7 +3503,7 @@ void BaseStyle::drawControl(ControlElement element,
         if (!isIndeterminate && !filled.isEmpty()) {
             // 创建渐变 - 从左到右
             QLinearGradient gradient;
-            if (progressBar->orientation == Qt::Horizontal) {
+            if (isHorizontal) {
                 gradient = QLinearGradient(filled.topLeft(), filled.topRight());
             } else {
                 gradient = QLinearGradient(filled.bottomLeft(), filled.topLeft());
@@ -5017,7 +5020,7 @@ QSize BaseStyle::sizeFromContents(ContentsType type,
         bool nullIcon = hdr->icon.isNull();
         int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, hdr, widget);
         int iconSize = nullIcon ? 0 : option->fontMetrics.height();
-        QSize txt = hdr->fontMetrics.size(Qt::TextSingleLine | Qt::TextBypassShaping, hdr->text);
+        QSize txt = hdr->fontMetrics.size(Qt::TextSingleLine, hdr->text);
         QSize sz;
         sz.setHeight(margin + qMax(iconSize, txt.height()) + margin);
         sz.setWidth((nullIcon ? 0 : margin) + iconSize + (hdr->text.isNull() ? 0 : margin) + txt.width() + margin);
