@@ -1,28 +1,26 @@
 # Maintainer: Lingmo OS Team <team@lingmo.org>
-
+# Contributor: devalexandre <alexandre@dev2learn.com>
 pkgname=lingmo-qt-plugins
-pkgver=2.0.0
+pkgver=3.0.0
 pkgrel=1
-pkgdesc="Unify Qt application style of Lingmo OS"
-arch=('x86_64')
+pkgdesc="Qt 6 platform theme and style plugins of the Lingmo desktop"
+arch=("x86_64")
 url="https://github.com/LingmoOS/lingmo-qt-plugins"
-license=('GPL')
-groups=('lingmo')
-depends=('kwindowsystem' 'libdbusmenu-qt5' 'libqtxdg' 'qt5-quickcontrols2')
-makedepends=('extra-cmake-modules' 'ninja' 'qt5-tools' 'git')
+license=("GPL")
+depends=("lingmoui" "qt6-base" "kwindowsystem" "xcb-util-wm" "libx11")
+makedepends=("cmake" "ninja" "extra-cmake-modules" "qt6-tools" "git")
 provides=("$pkgname")
 conflicts=("$pkgname")
 source=("git+$url.git")
-sha512sums=('SKIP')
+sha512sums=("SKIP")
 
 build() {
-  cd $pkgname
-
-  cmake -GNinja -DCMAKE_INSTALL_PREFIX=/usr .
-  ninja
+    cmake -S lingmo-qt-plugins -B build -G Ninja \
+        -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_BUILD_TYPE=None -DQT_NO_PRIVATE_MODULE_WARNING=ON
+    cmake --build build
 }
 
 package() {
-  cd $pkgname
-  DESTDIR="$pkgdir" ninja install
+    DESTDIR="$pkgdir" cmake --install build
 }
