@@ -21,6 +21,7 @@ public:
     ~PlatformTheme() override;
 
     QVariant themeHint(ThemeHint hint) const override;
+    Qt::ColorScheme colorScheme() const override;
     const QFont *font(Font type) const override;
 
     QPlatformMenuBar *createPlatformMenuBar() const override;

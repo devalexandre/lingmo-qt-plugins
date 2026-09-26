@@ -17,6 +17,7 @@
 #include <private/qiconloader_p.h>
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
+#include <qpa/qwindowsysteminterface.h>
 
 // Qt DBus
 #include <QDBusConnection>
@@ -71,6 +72,10 @@ PlatformTheme::PlatformTheme()
     connect(m_hints, &HintsSettings::systemFontPointSizeChanged, this, &PlatformTheme::onFontChanged);
     connect(m_hints, &HintsSettings::iconThemeChanged, this, &PlatformTheme::onIconThemeChanged);
     connect(m_hints, &HintsSettings::darkModeChanged, &onDarkModeChanged);
+    // Tell Qt 6 apps (styleHints()->colorScheme(), Qt Quick styles) about the change
+    connect(m_hints, &HintsSettings::darkModeChanged, this, [] {
+        QWindowSystemInterface::handleThemeChange();
+    });
 
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, false);
     setQtQuickControlsTheme();
@@ -78,6 +83,11 @@ PlatformTheme::PlatformTheme()
 
 PlatformTheme::~PlatformTheme()
 {
+}
+
+Qt::ColorScheme PlatformTheme::colorScheme() const
+{
+    return m_hints->darkMode() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
 }
 
 QVariant PlatformTheme::themeHint(QPlatformTheme::ThemeHint hintType) const
@@ -200,8 +210,10 @@ void PlatformTheme::onIconThemeChanged()
 
 void PlatformTheme::setQtQuickControlsTheme()
 {
-    //if the user has explicitly set something else, don't meddle
-    if (!QQuickStyle::name().isEmpty()) {
+    // If the user explicitly chose another style, don't meddle. Qt 6's
+    // QQuickStyle::name() returns the *resolved* style (e.g. "Fusion"), never empty,
+    // so it can't tell "unset" apart; check the variable users actually set.
+    if (!qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
         return;
     }
 
@@ -213,5 +225,7 @@ void PlatformTheme::setQtQuickControlsTheme()
         return;
     }
 
-    QQuickStyle::setStyle(QLatin1String("lingmo-style"));
+    // Qt 6 needs a custom style's full module URI (short names are for Qt's built-in
+    // styles); the Qt 5 name "lingmo-style" silently fell back to the default style
+    QQuickStyle::setStyle(QLatin1String("QtQuick.Controls.LingmoStyle"));
 }

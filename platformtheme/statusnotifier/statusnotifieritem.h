@@ -2,6 +2,7 @@
 #define STATUS_NOTIFIER_ITEM_H
 
 #include <QObject>
+#include <QPointer>
 #include <QIcon>
 #include <QMenu>
 #include <QDBusConnection>
@@ -54,6 +55,8 @@ public:
     QDBusObjectPath menu() const
     { return mMenuPath; }
     void setMenuPath(const QString &path);
+    // Exports a menu object carrying a com.canonical.dbusmenu adaptor as this item's menu
+    void setDBusMenu(QObject *menu);
 
     QString iconName() const
     { return mIconName; }
@@ -134,6 +137,7 @@ Q_SIGNALS:
 
 private:
     StatusNotifierItemAdaptor *mAdaptor;
+    QPointer<QObject> mDBusMenu;
 
     QString mService;
     QString mId;

@@ -37,7 +37,9 @@ StatusNotifierItem::StatusNotifierItem(QString id, QObject *parent)
 
     mSessionBus.registerObject(QLatin1String("/StatusNotifierItem"), this);
 
-    registerToHost();
+    // Register once the owner had a chance to set icon and menu: hosts read the
+    // properties right away and don't look at the menu path again
+    QMetaObject::invokeMethod(this, &StatusNotifierItem::registerToHost, Qt::QueuedConnection);
 
     // monitor the watcher service in case the host restarts
     QDBusServiceWatcher *watcher = new QDBusServiceWatcher(QLatin1String("org.kde.StatusNotifierWatcher"),
@@ -109,6 +111,23 @@ void StatusNotifierItem::setCategory(const QString &category)
 void StatusNotifierItem::setMenuPath(const QString& path)
 {
     mMenuPath.setPath(path);
+}
+
+void StatusNotifierItem::setDBusMenu(QObject *menu)
+{
+    static const QString path = QStringLiteral("/MenuBar");
+    if (mDBusMenu == menu)
+        return;
+
+    if (mDBusMenu)
+        mSessionBus.unregisterObject(path);
+    mDBusMenu = menu;
+
+    // The host looks the menu up on the connection the item registered with
+    if (menu && mSessionBus.registerObject(path, menu, QDBusConnection::ExportAdaptors))
+        setMenuPath(path);
+    else
+        setMenuPath(QStringLiteral("/NO_DBUSMENU"));
 }
 
 void StatusNotifierItem::setIconByName(const QString &name)

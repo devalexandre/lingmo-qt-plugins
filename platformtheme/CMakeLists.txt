@@ -25,6 +25,15 @@ set (SRCS
     systemtrayicon.cpp
     qdbusmenubar_p.h
     qdbusmenubar.cpp
+    # Qt's D-Bus menu classes, bundled: Qt >= 6.10 no longer exports them
+    dbusmenu/qdbusmenuadaptor_p.h
+    dbusmenu/qdbusmenuadaptor.cpp
+    dbusmenu/qdbusmenuregistrarproxy_p.h
+    dbusmenu/qdbusmenuregistrarproxy.cpp
+    dbusmenu/qdbusmenutypes_p.h
+    dbusmenu/qdbusmenutypes.cpp
+    dbusmenu/qdbusplatformmenu_p.h
+    dbusmenu/qdbusplatformmenu.cpp
     x11integration.h
     x11integration.cpp
     statusnotifier/dbustypes.h
@@ -61,19 +70,5 @@ target_link_libraries(lingmoplatformtheme PRIVATE
     ${XCB_EWMH_LIBRARIES}
 )
 
-find_program(QTPATHS_EXECUTABLE qtpaths)
-if(NOT QTPATHS_EXECUTABLE)
-    message(FATAL_ERROR "qtpaths is not found.")
-endif()
-
-execute_process(COMMAND ${QTPATHS_EXECUTABLE} --plugin-dir
-    OUTPUT_VARIABLE QT_PLUGINS_DIR
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-if(QT_PLUGINS_DIR)
-    message(STATUS "Qt6 plugin directory:" "${QT_PLUGINS_DIR}")
-else()
-    message(FATAL_ERROR "Qt6 plugin directory cannot be detected.")
-endif()
-
-install(TARGETS lingmoplatformtheme LIBRARY DESTINATION "${QT_PLUGINS_DIR}/platformthemes")
+# `qtpaths` on Arch is the Qt5 one; use the plugin dir Qt6 was built with
+install(TARGETS lingmoplatformtheme LIBRARY DESTINATION "${QT6_INSTALL_PLUGINS}/platformthemes")

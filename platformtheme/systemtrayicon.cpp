@@ -1,4 +1,6 @@
 #include "systemtrayicon.h"
+#include "dbusmenu/qdbusmenuadaptor_p.h"
+#include "dbusmenu/qdbusplatformmenu_p.h"
 #include <QAction>
 #include <QIcon>
 #include <QMenu>
@@ -244,6 +246,7 @@ SystemTrayIcon::SystemTrayIcon()
     qDBusRegisterMetaType<ToolTip>();
     qDBusRegisterMetaType<IconPixmap>();
     qDBusRegisterMetaType<IconPixmapList>();
+    QDBusMenuItem::registerDBusTypes();
 }
 
 SystemTrayIcon::~SystemTrayIcon()
@@ -316,13 +319,25 @@ void SystemTrayIcon::updateMenu(QPlatformMenu *menu)
     if (!mSni)
         return;
 
-    if (SystemTrayMenu *ourMenu = qobject_cast<SystemTrayMenu*>(menu))
+    // Export the menu over com.canonical.dbusmenu (as Qt's own QDBusTrayIcon does) so
+    // the tray host can show it: the item's ContextMenu() alone isn't used by hosts
+    if (QDBusPlatformMenu *dbusMenu = qobject_cast<QDBusPlatformMenu*>(menu)) {
+        if (!dbusMenu->findChild<QDBusMenuAdaptor*>(QString(), Qt::FindDirectChildrenOnly)) {
+            QDBusMenuAdaptor *adaptor = new QDBusMenuAdaptor(dbusMenu);
+            QObject::connect(dbusMenu, &QDBusPlatformMenu::propertiesUpdated,
+                             adaptor, &QDBusMenuAdaptor::ItemsPropertiesUpdated);
+            QObject::connect(dbusMenu, &QDBusPlatformMenu::updated,
+                             adaptor, &QDBusMenuAdaptor::LayoutUpdated);
+        }
+        mSni->setDBusMenu(dbusMenu);
+    } else if (SystemTrayMenu *ourMenu = qobject_cast<SystemTrayMenu*>(menu)) {
         mSni->setContextMenu(ourMenu->menu());
+    }
 }
 
 QPlatformMenu *SystemTrayIcon::createMenu() const
 {
-    return new SystemTrayMenu();
+    return new QDBusPlatformMenu();
 }
 
 QRect SystemTrayIcon::geometry() const
@@ -346,7 +361,13 @@ bool SystemTrayIcon::isSystemTrayAvailable() const
                                QLatin1String("/StatusNotifierWatcher"),
                                QLatin1String("org.kde.StatusNotifierWatcher"));
 
-    return systrayHost.isValid() && systrayHost.property("IsStatusNotifierHostRegistered").toBool();
+    if (systrayHost.isValid() && systrayHost.property("IsStatusNotifierHostRegistered").toBool())
+        return true;
+
+    // Apps autostarted with the session can come up before the statusbar hosts the
+    // tray: in a Lingmo session it will be there shortly, and StatusNotifierItem
+    // registers itself as soon as the watcher appears
+    return qgetenv("XDG_CURRENT_DESKTOP").split(':').contains("Lingmo");
 }
 
 bool SystemTrayIcon::supportsMessages() const

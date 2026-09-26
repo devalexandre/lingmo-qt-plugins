@@ -44,6 +44,9 @@ HintsSettings::HintsSettings(QObject *parent)
     m_hints[QPlatformTheme::IconThemeSearchPaths] = xdgIconThemePaths();
     m_hints[QPlatformTheme::UseFullScreenForPopupMenu] = false;
     m_hints[QPlatformTheme::DialogButtonBoxLayout] = QPlatformDialogHelper::MacLayout;
+    // Without HoverEffect Qt Quick controls default to hoverEnabled: false and never react
+    // to the mouse (menu highlight, segmented control, field borders...)
+    m_hints[QPlatformTheme::UiEffects] = int(QPlatformTheme::GeneralUiEffect | QPlatformTheme::HoverEffect);
 
     m_settingsFile = m_settings->fileName();
 
