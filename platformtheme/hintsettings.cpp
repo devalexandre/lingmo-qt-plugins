@@ -81,7 +81,7 @@ QStringList HintsSettings::xdgIconThemePaths() const
 
 QString HintsSettings::systemFont() const
 {
-    return m_settings->value(s_systemFontName, "Noto Sans").toString();
+    return m_settings->value(s_systemFontName, "Inter").toString();
 }
 
 QString HintsSettings::systemFixedFont() const
