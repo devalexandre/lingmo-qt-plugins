@@ -24,21 +24,25 @@ static const QByteArray s_systemFontName = QByteArrayLiteral("Font");
 static const QByteArray s_systemFixedFontName = QByteArrayLiteral("FixedFont");
 static const QByteArray s_systemPointFontSize = QByteArrayLiteral("FontSize");
 static const QByteArray s_darkModeName = QByteArrayLiteral("DarkMode");
-static const QByteArray s_lightIconName = QByteArrayLiteral("Crule");
-static const QByteArray s_darkIconName = QByteArrayLiteral("Crule-dark");
+static const QString s_defaultIconTheme = QStringLiteral("Lingmo");
+
+// Lingmo's icon themes come in light/dark pairs that follow the dark mode
+static QString iconThemeFor(const QString &theme, bool dark)
+{
+    for (const QString &base : {QStringLiteral("Lingmo"), QStringLiteral("Crule")}) {
+        if (theme == base || theme == base + QLatin1String("-dark"))
+            return dark ? base + QLatin1String("-dark") : base;
+    }
+    return theme;
+}
 
 HintsSettings::HintsSettings(QObject *parent)
     : QObject(parent),
       m_settings(new QSettings(QSettings::UserScope, "lingmoos", "theme"))
 {
-    m_iconTheme = m_settings->value("IconTheme", "Crule").toString();
+    m_iconTheme = m_settings->value("IconTheme", s_defaultIconTheme).toString();
+    m_hints[QPlatformTheme::SystemIconThemeName] = iconThemeFor(m_iconTheme, darkMode());
 
-    if (m_iconTheme.contains("Crule"))
-        m_hints[QPlatformTheme::SystemIconThemeName] = darkMode() ? s_darkIconName : s_lightIconName;
-    else
-        m_hints[QPlatformTheme::SystemIconThemeName] = m_iconTheme;
-
-    m_hints[QPlatformTheme::SystemIconFallbackThemeName] = s_lightIconName;
     m_hints[QPlatformTheme::StyleNames] = "lingmo";
     m_hints[QPlatformTheme::SystemIconFallbackThemeName] = QStringLiteral("hicolor");
     m_hints[QPlatformTheme::IconThemeSearchPaths] = xdgIconThemePaths();
@@ -123,18 +127,12 @@ void HintsSettings::onFileChanged(const QString &path)
                 emit systemFontPointSizeChanged(newValue.toDouble());
             else if (value == s_darkModeName) {
                 emit darkModeChanged(newValue.toBool());
-                // Need to update the icon to dark
-
-                if (m_iconTheme.contains("Crule"))
-                    m_hints[QPlatformTheme::SystemIconThemeName] = darkMode() ? s_darkIconName : s_lightIconName;
-
+                // Lingmo and Crule switch to their dark twin
+                m_hints[QPlatformTheme::SystemIconThemeName] = iconThemeFor(m_iconTheme, darkMode());
                 emit iconThemeChanged();
             } else if (value == "IconTheme") {
-                if (!m_iconTheme.contains("Crule")) {
-                    m_iconTheme = newValue.toString();
-                    m_hints[QPlatformTheme::SystemIconThemeName] = m_iconTheme;
-                }
-
+                m_iconTheme = newValue.toString();
+                m_hints[QPlatformTheme::SystemIconThemeName] = iconThemeFor(m_iconTheme, darkMode());
                 emit iconThemeChanged();
             }
         }
